@@ -1,4 +1,4 @@
-# ipv4
+# ipv46 [![tests](https://github.com/badrap/ipv46/workflows/tests/badge.svg)](https://github.com/badrap/ipv46/actions?query=workflow%3Atests) [![npm](https://img.shields.io/npm/v/@badrap/ipv46.svg)](https://www.npmjs.com/package/@badrap/ipv46)
 
 **ipv46** is a small JavaScript library for parsing, formatting and sorting IPv4/6 addresses. It works on both Node.js and browser environments.
 
