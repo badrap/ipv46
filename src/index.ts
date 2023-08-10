@@ -68,7 +68,6 @@ export class IPv4 {
         break;
       }
       bytes[i] = 0;
-      bytes[i - 1]++;
     }
     return new IPv4(bytes);
   }
@@ -221,7 +220,6 @@ export class IPv6 {
         break;
       }
       words[i] = 0;
-      words[i - 1]++;
     }
     return new IPv6(words);
   }

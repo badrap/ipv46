@@ -378,23 +378,27 @@ describe("IPRange", () => {
 
   describe("ips()", () => {
     it("iterates through the IP addresses in the range", () => {
-      const r4 = IPRange.parse("1.2.3.0/30");
+      const r4 = IPRange.parse("1.2.2.0/23");
       assert(r4);
-      expect(Array.from(r4.ips()).map((ip) => String(ip))).toEqual([
-        "1.2.3.0",
-        "1.2.3.1",
-        "1.2.3.2",
-        "1.2.3.3",
-      ]);
 
-      const r6 = IPRange.parse("1:2:3:ffff:5:6:7:ffff/126");
+      const ip4s: string[] = [];
+      for (let i = 2; i < 4; i++) {
+        for (let j = 0; j < 256; j++) {
+          ip4s.push(`1.2.${i}.${j}`);
+        }
+      }
+      expect(Array.from(r4.ips()).map((ip) => String(ip))).toEqual(ip4s);
+
+      const r6 = IPRange.parse("::ffff:2:0/111");
       assert(r6);
-      expect(Array.from(r6.ips()).map((ip) => String(ip))).toEqual([
-        "1:2:3:ffff:5:6:7:fffc",
-        "1:2:3:ffff:5:6:7:fffd",
-        "1:2:3:ffff:5:6:7:fffe",
-        "1:2:3:ffff:5:6:7:ffff",
-      ]);
+
+      const ip6s: string[] = [];
+      for (let i = 2; i < 4; i++) {
+        for (let j = 0; j < 65536; j++) {
+          ip6s.push(`::ffff:${i.toString(16)}:${j.toString(16)}`);
+        }
+      }
+      expect(Array.from(r6.ips()).map((ip) => String(ip))).toEqual(ip6s);
     });
   });
 });
