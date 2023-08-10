@@ -1,5 +1,5 @@
 {
-  "name": "@hownetworks/ipv46",
+  "name": "@badrap/ipv46",
   "version": "2.0.2",
   "description": "Parse, format and compare IPv4/6 addresses",
   "main": "dist/ipv46.js",
@@ -7,7 +7,7 @@
   "source": "src/ipv46.ts",
   "sideEffects": false,
   "author": "Joachim Viide <jviide@iki.fi>",
-  "repository": "HowNetWorks/ipv46",
+  "repository": "badrap/ipv46",
   "license": "MIT",
   "scripts": {
     "test": "tsc --noEmit --skipLibCheck && TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' mocha --require ts-node/register test/**/*.test.js",

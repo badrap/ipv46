@@ -1,17 +1,17 @@
-# ipv46 [![CircleCI](https://circleci.com/gh/HowNetWorks/ipv46.svg?style=shield)](https://circleci.com/gh/HowNetWorks/ipv46)
+# ipv4
 
 **ipv46** is a small JavaScript library for parsing, formatting and sorting IPv4/6 addresses. It works on both Node.js and browser environments.
 
 ## Installation
 
 ```sh
-$ npm install @hownetworks/ipv46
+$ npm install @badrap/ipv46
 ```
 
 # Usage
 
 ```js
-const { IP } = require("@hownetworks/ipv46");
+import { IP } from "@badrap/ipv46";
 ```
 
 ## IP.parse(string)
