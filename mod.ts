@@ -1,1 +1,1 @@
-export * from "./src/ipv46.ts";
+export * from "./src/index.ts";

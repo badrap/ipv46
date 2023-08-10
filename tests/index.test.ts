@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { describe, it, expect } from "vitest";
-import { IP, IPv4, IPv6, IPRange } from "../src/ipv46";
+import { IP, IPv4, IPv6, IPRange } from "../src";
 
 describe("IPv4", () => {
   describe("cmp()", () => {
