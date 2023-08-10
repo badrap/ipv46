@@ -375,4 +375,26 @@ describe("IPRange", () => {
       expect(IPRange.parse("1.2.3.4-1::2")).toBeNull();
     });
   });
+
+  describe("ips()", () => {
+    it("iterates through the IP addresses in the range", () => {
+      const r4 = IPRange.parse("1.2.3.0/30");
+      assert(r4);
+      expect(Array.from(r4.ips()).map((ip) => String(ip))).toEqual([
+        "1.2.3.0",
+        "1.2.3.1",
+        "1.2.3.2",
+        "1.2.3.3",
+      ]);
+
+      const r6 = IPRange.parse("1:2:3:ffff:5:6:7:ffff/126");
+      assert(r6);
+      expect(Array.from(r6.ips()).map((ip) => String(ip))).toEqual([
+        "1:2:3:ffff:5:6:7:fffc",
+        "1:2:3:ffff:5:6:7:fffd",
+        "1:2:3:ffff:5:6:7:fffe",
+        "1:2:3:ffff:5:6:7:ffff",
+      ]);
+    });
+  });
 });

@@ -55,6 +55,23 @@ export class IPv4 {
     const last = new IPv4(mask(this._bytes, bits, 8, 1));
     return new IPRange(first, last);
   }
+
+  _next(): IPv4 | null {
+    const bytes = this._bytes.slice();
+    for (let i = bytes.length - 1; i >= 0; i--) {
+      const b = bytes[i];
+      if (b === 255 && i === 0) {
+        return null;
+      }
+      if (b < 255) {
+        bytes[i]++;
+        break;
+      }
+      bytes[i] = 0;
+      bytes[i - 1]++;
+    }
+    return new IPv4(bytes);
+  }
 }
 
 const IPV6_REGEX = /^[a-f0-9:]{2,39}$/i;
@@ -191,6 +208,23 @@ export class IPv6 {
     const last = new IPv6(mask(this._words, bits, 16, 1));
     return new IPRange(first, last);
   }
+
+  _next(): IPv6 | null {
+    const words = this._words.slice();
+    for (let i = words.length - 1; i >= 0; i--) {
+      const b = words[i];
+      if (b === 65535 && i === 0) {
+        return null;
+      }
+      if (b < 65535) {
+        words[i]++;
+        break;
+      }
+      words[i] = 0;
+      words[i - 1]++;
+    }
+    return new IPv6(words);
+  }
 }
 
 export type IP = IPv4 | IPv6;
@@ -291,5 +325,13 @@ export class IPRange {
       this.last = last;
     }
     this.version = first.version;
+  }
+
+  *ips(): Iterable<IP> {
+    let ip: IP | null = this.first;
+    while (ip && IP.cmp(ip, this.last) <= 0) {
+      yield ip;
+      ip = ip._next();
+    }
   }
 }
