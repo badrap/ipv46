@@ -2,26 +2,39 @@
   "name": "@badrap/ipv46",
   "version": "2.0.2",
   "description": "Parse, format and compare IPv4/6 addresses",
-  "main": "dist/ipv46.js",
-  "module": "dist/ipv46.mjs",
-  "source": "src/ipv46.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/mjs/index.mjs",
+  "exports": {
+    "node": {
+      "module": "./dist/mjs/index.mjs",
+      "import": "./dist/mjs/index.mjs",
+      "require": "./dist/cjs/index.js"
+    },
+    "default": "./dist/mjs/index.mjs"
+  },
   "sideEffects": false,
   "author": "Joachim Viide <jviide@iki.fi>",
   "repository": "badrap/ipv46",
   "license": "MIT",
   "scripts": {
-    "test": "tsc --noEmit --skipLibCheck && TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' mocha --require ts-node/register test/**/*.test.js",
-    "build": "rm -rf dist && microbundle --format es,cjs",
-    "prepublishOnly": "yarn run build"
+    "lint": "eslint --ignore-path .gitignore --max-warnings 0 --ext=.js,.ts .",
+    "typecheck": "tsc --skipLibCheck --noEmit",
+    "test": "vitest run",
+    "build": "rm -rf dist/* && npm run build:cjs && npm run build:mjs",
+    "build:cjs": "tsc -p ./tsconfig.build.json --target es2015 --module commonjs --outDir ./dist/cjs",
+    "build:mjs": "tsc -p ./tsconfig.build.json --target es2015 --module es2015 --outDir ./dist/mjs && mv ./dist/mjs/index.js ./dist/mjs/index.mjs && mv ./dist/mjs/index.d.ts ./dist/mjs/index.d.mts",
+    "prepack": "npm run build"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.8",
-    "@types/mocha": "^7.0.1",
-    "chai": "^4.2.0",
-    "microbundle": "^0.12.0-next.8",
-    "mocha": "^7.0.1",
-    "ts-node": "^8.6.2",
-    "typescript": "^3.7.2"
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
+    "@typescript-eslint/parser": "^6.2.1",
+    "eslint": "^8.46.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.1",
+    "ts-expect": "^1.3.0",
+    "typescript": "^5.1.6",
+    "vitest": "^0.34.1"
   },
   "keywords": [
     "ip",
@@ -29,5 +42,9 @@
     "ipv6",
     "rfc4291",
     "rfc5952"
+  ],
+  "files": [
+    "src",
+    "dist"
   ]
 }
