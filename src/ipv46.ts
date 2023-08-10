@@ -8,7 +8,8 @@ function cmpSameLengthArrays<T>(left: T[], right: T[]): number {
   return 0;
 }
 
-const IPV4_REGEX = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)$/;
+const IPV4_REGEX =
+  /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)$/;
 
 function parseIPv4Bytes(ipStr: string): number[] | null {
   const ipv4 = ipStr.match(IPV4_REGEX);
@@ -76,10 +77,10 @@ function parseHexWords(ipStr: string): number[] | null {
   return words;
 }
 
-function formatHexWords(words: number[], start?: number, end?: number) {
+function formatHexWords(words: number[], start?: number, end?: number): string {
   return words
     .slice(start, end)
-    .map(w => w.toString(16))
+    .map((w) => w.toString(16))
     .join(":");
 }
 
@@ -115,7 +116,7 @@ function parseIPv6Words(ipStr: string): number[] | null {
   return head.concat(IPV6_ZEROS.slice(0, 8 - head.length - tail.length), tail);
 }
 
-function formatIPv6(words: number[]) {
+function formatIPv6(words: number[]): string {
   let currentRun = 0;
   let longestRun = 0;
   let start = null;
@@ -194,12 +195,12 @@ export class IPv6 {
 
 export type IP = IPv4 | IPv6;
 
-export namespace IP {
-  export function parse(string: string): IP | null {
+export const IP = {
+  parse(string: string): IP | null {
     return IPv4.parse(string) || IPv6.parse(string);
-  }
+  },
 
-  export function cmp(a: IP, b: IP): number {
+  cmp(a: IP, b: IP): number {
     if (a.version === 6 && b.version === 6) {
       return IPv6.cmp(a, b);
     } else if (a.version === 4 && b.version === 4) {
@@ -209,14 +210,14 @@ export namespace IP {
     } else {
       throw new TypeError("type mismatch");
     }
-  }
-}
+  },
+};
 
 function mask<T extends number[]>(
   array: T,
   bits: number,
   bitsPerItem: number,
-  bitValue: 0 | 1
+  bitValue: 0 | 1,
 ): T {
   const itemMask = (1 << bitsPerItem) - 1;
 
@@ -224,7 +225,7 @@ function mask<T extends number[]>(
   for (let i = 0; i < array.length; i++) {
     const leftBits = Math.min(
       Math.max(0, (i + 1) * bitsPerItem - bits),
-      bitsPerItem
+      bitsPerItem,
     );
     copy[i] &= (itemMask << leftBits) & itemMask;
     copy[i] |= bitValue * ((1 << leftBits) - 1);
@@ -253,15 +254,22 @@ export class IPRange {
       if (pieces.length > 2) {
         return null;
       }
-      let first = IP.parse(pieces[0]);
-      let last = IP.parse(pieces[1]);
-      if (!first || !last || first.version !== last.version) {
-        return null;
+      const first = IP.parse(pieces[0]);
+      const last = IP.parse(pieces[1]);
+      if (first?.version === 4 && last?.version === 4) {
+        return new IPRange(first, last);
+      } else if (first?.version === 6 && last?.version === 6) {
+        return new IPRange(first, last);
       }
-      return new IPRange(first as any, last as any);
+      return null;
     } else {
       const ip = IP.parse(string);
-      return ip && new IPRange(ip as any, ip as any);
+      if (ip?.version === 4) {
+        return new IPRange(ip, ip);
+      } else if (ip?.version === 6) {
+        return new IPRange(ip, ip);
+      }
+      return null;
     }
   }
 
