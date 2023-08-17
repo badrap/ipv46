@@ -3,7 +3,7 @@
 **ipv46** is a small JavaScript library for parsing, formatting and sorting IPv4/6 addresses. It works on both Node.js and browser environments.
 
 > [!NOTE]
-> Currently, we're not taking in any new feature requests or suggestions. Our team is focused on essential features for our product development. Please use the issue tracker for bug reports and security concerns, which we highly value and welcome. Thank you for your understanding ❤️
+> While this package is still evolving, we're currently not accepting any new feature requests or suggestions. Please use the issue tracker for bug reports and security concerns, which we highly value and welcome. Thank you for your understanding ❤️
 
 ## Installation
 
