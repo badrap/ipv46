@@ -401,4 +401,68 @@ describe("IPRange", () => {
       expect(Array.from(r6.ips()).map((ip) => String(ip))).toEqual(ip6s);
     });
   });
+
+  describe("toString()", () => {
+    it("formats single IP ranges as a single IPs", () => {
+      const r1 = IPRange.parse("0.0.0.0");
+      assert(r1);
+      expect(r1.toString()).toBe("0.0.0.0");
+
+      const r2 = IPRange.parse("1.2.2.0");
+      assert(r2);
+      expect(r2.toString()).toBe("1.2.2.0");
+
+      const r3 = IPRange.parse("::");
+      assert(r3);
+      expect(r3.toString()).toBe("::");
+
+      const r4 = IPRange.parse("::ffff:2:0");
+      assert(r4);
+      expect(r4.toString()).toBe("::ffff:2:0");
+    });
+
+    it("formats multi-IP ranges as a CIDRs when possible", () => {
+      const r1 = IPRange.parse("0.0.0.0/0");
+      assert(r1);
+      expect(r1.toString()).toBe("0.0.0.0/0");
+
+      const r2 = IPRange.parse("1.2.2.0/23");
+      assert(r2);
+      expect(r2.toString()).toBe("1.2.2.0/23");
+
+      const r3 = IPRange.parse("1.2.2.0-1.2.3.255");
+      assert(r3);
+      expect(r3.toString()).toBe("1.2.2.0/23");
+
+      const r4 = IPRange.parse("::/0");
+      assert(r4);
+      expect(r4.toString()).toBe("::/0");
+
+      const r5 = IPRange.parse("::ffff:2:0/111");
+      assert(r5);
+      expect(r5.toString()).toBe("::ffff:2:0/111");
+
+      const r6 = IPRange.parse("::ffff:2:0-::ffff:3:ffff");
+      assert(r6);
+      expect(r6.toString()).toBe("::ffff:2:0/111");
+    });
+
+    it("formats multi-IP ranges as ranges when a CIDR representation is not possible", () => {
+      const r1 = IPRange.parse("0.0.0.0-255.255.254.255");
+      assert(r1);
+      expect(r1.toString()).toBe("0.0.0.0-255.255.254.255");
+
+      const r2 = IPRange.parse("1.2.2.0-1.2.3.253");
+      assert(r2);
+      expect(r2.toString()).toBe("1.2.2.0-1.2.3.253");
+
+      const r3 = IPRange.parse("::-ffff:ffff:ffff:ffff:ffef:ffff:ffff:ffff");
+      assert(r3);
+      expect(r3.toString()).toBe("::-ffff:ffff:ffff:ffff:ffef:ffff:ffff:ffff");
+
+      const r4 = IPRange.parse("::ffff:2:0-::ffff:3:0");
+      assert(r4);
+      expect(r4.toString()).toBe("::ffff:2:0-::ffff:3:0");
+    });
+  });
 });

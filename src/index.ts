@@ -56,6 +56,10 @@ export class IPv4 {
     return new IPRange(first, last);
   }
 
+  _cidrBits(last: IPv4): number | undefined {
+    return cidrBits(this._bytes, last._bytes, 8);
+  }
+
   _next(): IPv4 | null {
     const bytes = this._bytes.slice();
     for (let i = bytes.length - 1; i >= 0; i--) {
@@ -208,6 +212,10 @@ export class IPv6 {
     return new IPRange(first, last);
   }
 
+  _cidrBits(last: IPv6): number | undefined {
+    return cidrBits(this._words, last._words, 16);
+  }
+
   _next(): IPv6 | null {
     const words = this._words.slice();
     for (let i = words.length - 1; i >= 0; i--) {
@@ -245,10 +253,60 @@ export const IP = {
   },
 };
 
+function cidrBits<T extends number[]>(
+  array1: T,
+  array2: T,
+  bitsPerItem: 8 | 16,
+): number | undefined {
+  // Find the longest run of equal items from the start of the array.
+  let commonItems = 0;
+  for (let i = 0; i < array1.length; i++) {
+    if (array1[i] !== array2[i]) {
+      break;
+    }
+    commonItems++;
+  }
+
+  // Skip the rest if the arrays are completely equal.
+  if (commonItems === array1.length) {
+    return commonItems * bitsPerItem;
+  }
+
+  // Find the longest run of equal most significant bits from the
+  // first item that is not equal between array1 and array2.
+  let commonBits = 0;
+  for (let i = 0; i < bitsPerItem; i++) {
+    const mask = 1 << (bitsPerItem - i - 1);
+    if ((array1[commonItems] & mask) !== (array2[commonItems] & mask)) {
+      break;
+    }
+    commonBits++;
+  }
+
+  // Check that all the remaining bits are all zeroes in array1
+  // and all ones in array2.
+  for (let i = commonBits; i < bitsPerItem; i++) {
+    const mask = 1 << (bitsPerItem - i - 1);
+    if (
+      (array1[commonItems] & mask) !== 0 ||
+      (array2[commonItems] & mask) === 0
+    ) {
+      return undefined;
+    }
+  }
+  const allOnes = bitsPerItem === 8 ? 0xff : 0xffff;
+  for (let i = commonItems + 1; i < array1.length; i++) {
+    if (array1[i] !== 0 || array2[i] !== allOnes) {
+      return undefined;
+    }
+  }
+  return commonItems * bitsPerItem + commonBits;
+}
+
 function mask<T extends number[]>(
   array: T,
   bits: number,
-  bitsPerItem: number,
+  bitsPerItem: 8 | 16,
   bitValue: 0 | 1,
 ): T {
   const itemMask = (1 << bitsPerItem) - 1;
@@ -330,6 +388,26 @@ export class IPRange {
     while (ip && IP.cmp(ip, this.last) <= 0) {
       yield ip;
       ip = ip._next();
+    }
+  }
+
+  toString(): string {
+    let bits: number | undefined;
+    let maxBits: number;
+    if (this.first.version === 4) {
+      bits = this.first._cidrBits(this.last as IPv4);
+      maxBits = 32;
+    } else {
+      bits = this.first._cidrBits(this.last as IPv6);
+      maxBits = 128;
+    }
+
+    if (bits === undefined) {
+      return this.first.toString() + "-" + this.last.toString();
+    } else if (bits === maxBits) {
+      return this.first.toString();
+    } else {
+      return this.first.toString() + "/" + bits;
     }
   }
 }
