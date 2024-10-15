@@ -1,5 +1,11 @@
 # @badrap/ipv46
 
+## 2.2.2
+
+### Patch Changes
+
+- [`3a24c2c`](https://github.com/badrap/ipv46/commit/3a24c2c0e89ab5723271f4f5b298d4357b7f39c0) Thanks [@jviide](https://github.com/jviide)! - Add explicit type for `const IP`
+
 ## 2.2.1
 
 ### Patch Changes
