@@ -1,5 +1,11 @@
 # @badrap/ipv46
 
+## 2.2.3
+
+### Patch Changes
+
+- [`4203475`](https://github.com/badrap/ipv46/commit/420347500098d363d0ef13181e79a11a71cd8c81) Thanks [@jviide](https://github.com/jviide)! - Add missing file
+
 ## 2.2.2
 
 ### Patch Changes
