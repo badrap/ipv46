@@ -235,12 +235,15 @@ export class IPv6 {
 
 export type IP = IPv4 | IPv6;
 
-export const IP = {
-  parse(string: string): IP | null {
+export const IP: {
+  parse(string: string): IP | null;
+  cmp(a: IP, b: IP): number;
+} = {
+  parse(string) {
     return IPv4.parse(string) || IPv6.parse(string);
   },
 
-  cmp(a: IP, b: IP): number {
+  cmp(a, b) {
     if (a.version === 6 && b.version === 6) {
       return IPv6.cmp(a, b);
     } else if (a.version === 4 && b.version === 4) {
