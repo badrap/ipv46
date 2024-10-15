@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
-    "target": "es2015",
-    "module": "commonjs",
+    "target": "es2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "noImplicitReturns": true,
     "declaration": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
+    "isolatedModules": true,
     "outDir": "./dist/main",
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["mod.ts", "src/**/*.ts", "tests/**/*.ts"]
+  "include": ["mod.ts", "src/**/*", "tests/**/*"]
 }
