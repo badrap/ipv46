@@ -1,5 +1,11 @@
 # @badrap/ipv46
 
+## 2.2.1
+
+### Patch Changes
+
+- [`d15c904`](https://github.com/badrap/ipv46/commit/d15c90414d8101a1fd901f20f7f5b1ca0831328c) Thanks [@jviide](https://github.com/jviide)! - Include jsr in devDependencies
+
 ## 2.2.0
 
 ### Minor Changes
