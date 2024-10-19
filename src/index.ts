@@ -1,79 +1,118 @@
-function cmpSameLengthArrays<T>(left: T[], right: T[]): number {
-  const len = left.length;
-  for (let i = 0; i < len; i++) {
-    if (left[i] !== right[i]) {
-      return left[i] < right[i] ? -1 : 1;
+// Parse an IPv4 address from `ipStr`, starting from offset `start` and
+// ending at the end of the string.
+//
+// Return the address as a 32-bit unsigned integer on success, otherwise
+// return -1 on failure.
+//
+// Accept only 4 octet addresses. Accept only octets without leading zeroes.
+function parseIPv4(ipStr: string, start: number): number {
+  const length = ipStr.length;
+  if (length - start < 7 || length - start > 15) {
+    return -1;
+  }
+
+  for (let i = 0, j = 0, offset = start, octet = 0, result = 0; ; offset++) {
+    if (offset >= length) {
+      if (i === 3 && j > 0) {
+        return ((result << 8) | octet) >>> 0;
+      }
+      return -1;
+    }
+
+    const ch = ipStr.charCodeAt(offset);
+    if (ch >= 48 && ch <= 57 && j < 3) {
+      if (octet === 0 && j > 0) {
+        return -1;
+      }
+      octet = ((octet << 3) + (octet << 1) + (ch - 48)) | 0;
+      if (octet > 255) {
+        return -1;
+      }
+      j++;
+    } else if (ch === 46 && i < 3 && j > 0) {
+      result = (result << 8) | octet;
+      octet = 0;
+      i++;
+      j = 0;
+    } else {
+      return -1;
     }
   }
-  return 0;
-}
-
-const IPV4_REGEX =
-  /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)$/;
-
-function parseIPv4Bytes(ipStr: string): number[] | null {
-  const ipv4 = ipStr.match(IPV4_REGEX);
-  if (!ipv4) {
-    return null;
-  }
-  return ipv4.slice(1, 5).map(Number);
 }
 
 export class IPv4 {
   static parse(string: string): IPv4 | null {
-    if (string.indexOf(".") < 0) {
-      return null;
-    }
-    const bytes = parseIPv4Bytes(string);
-    if (!bytes) {
-      return null;
-    }
-    return new IPv4(bytes);
+    const int = parseIPv4(string, 0);
+    return int < 0 ? null : new IPv4(int);
   }
 
   static cmp(a: IPv4, b: IPv4): number {
-    return cmpSameLengthArrays(a._bytes, b._bytes);
+    return Math.sign(a._u32 - b._u32);
   }
 
-  readonly version = 4;
-  private readonly _bytes: number[];
-  private _string: string | null = null;
-
-  private constructor(bytes: number[]) {
-    this._bytes = bytes;
+  readonly version!: 4;
+  static {
+    Object.defineProperty(this.prototype, "version", {
+      value: 4,
+      writable: false,
+    });
   }
+
+  private constructor(readonly _u32: number) {}
 
   toString(): string {
-    if (this._string === null) {
-      this._string = this._bytes.join(".");
-    }
-    return this._string;
+    const b = this._u32;
+    return `${b >>> 24}.${(b >>> 16) & 0xff}.${(b >>> 8) & 0xff}.${b & 0xff}`;
   }
 
   cidr(bits: number): IPRange {
-    const first = new IPv4(mask(this._bytes, bits, 8, 0));
-    const last = new IPv4(mask(this._bytes, bits, 8, 1));
+    if (bits === 32) {
+      return new IPRange(this, this);
+    }
+    const mask = -1 >>> bits;
+    const first = new IPv4((this._u32 & ~mask) >>> 0);
+    const last = new IPv4((this._u32 | mask) >>> 0);
     return new IPRange(first, last);
   }
 
-  _cidrBits(last: IPv4): number | undefined {
-    return cidrBits(this._bytes, last._bytes, 8);
+  _cidrBits(last: IPv4): number {
+    const a = this._u32;
+    const b = last._u32;
+
+    // Fast path: This is a single-IP range.
+    if (a === b) {
+      return 32;
+    }
+
+    // Find out the shortest bit prefix length that the addresses
+    // *don't* share.
+    let lo = 1;
+    let hi = 32;
+    while (lo < hi) {
+      const mid = (hi + lo) >> 1;
+      const mask = -1 >>> mid;
+      if ((a | mask) === (b | mask)) {
+        lo = mid + 1;
+      } else {
+        hi = mid;
+      }
+    }
+
+    // Ensure that `a` and `b` actually are the first and last address
+    // in the potential CIDR block.
+    const mask = (-1 >>> (lo - 1)) | 0;
+    if ((a & mask) !== 0 || (b & mask) !== mask) {
+      return -1;
+    }
+
+    // Return the length of the longest bit prefix that the addresses
+    // *do* share.
+    return lo - 1;
   }
 
   _next(): IPv4 | null {
-    const bytes = this._bytes.slice();
-    for (let i = bytes.length - 1; i >= 0; i--) {
-      const b = bytes[i];
-      if (b === 255 && i === 0) {
-        return null;
-      }
-      if (b < 255) {
-        bytes[i]++;
-        break;
-      }
-      bytes[i] = 0;
-    }
-    return new IPv4(bytes);
+    const b = (this._u32 + 1) | 0;
+    return b === 0 ? null : new IPv4(b);
   }
 }
 
@@ -169,8 +208,8 @@ export class IPv6 {
       return null;
     }
 
-    const bytes = parseIPv4Bytes(string.slice(index + 1));
-    if (bytes === null) {
+    const ip4 = parseIPv4(string, index + 1);
+    if (ip4 < 0) {
       const words = parseIPv6Words(string);
       if (words === null) {
         return null;
@@ -182,16 +221,32 @@ export class IPv6 {
     if (words === null) {
       return null;
     }
-    words[6] = bytes[0] * 256 + bytes[1];
-    words[7] = bytes[2] * 256 + bytes[3];
+    words[6] = ip4 >>> 16;
+    words[7] = ip4 & 0xffff;
     return new IPv6(words);
   }
 
   static cmp(a: IPv6, b: IPv6): number {
-    return cmpSameLengthArrays(a._words, b._words);
+    const aw = a._words;
+    const bw = b._words;
+
+    const len = aw.length;
+    for (let i = 0; i < len; i++) {
+      if (aw[i] !== bw[i]) {
+        return aw[i] < bw[i] ? -1 : 1;
+      }
+    }
+    return 0;
   }
 
-  readonly version = 6;
+  readonly version!: 6;
+  static {
+    Object.defineProperty(this.prototype, "version", {
+      value: 6,
+      writable: false,
+    });
+  }
+
   private readonly _words: number[];
   private _string: string | null = null;
 
@@ -212,7 +267,7 @@ export class IPv6 {
     return new IPRange(first, last);
   }
 
-  _cidrBits(last: IPv6): number | undefined {
+  _cidrBits(last: IPv6): number {
     return cidrBits(this._words, last._words, 16);
   }
 
@@ -260,7 +315,7 @@ function cidrBits<T extends number[]>(
   array1: T,
   array2: T,
   bitsPerItem: 8 | 16,
-): number | undefined {
+): number {
   // Find the longest run of equal items from the start of the array.
   let commonItems = 0;
   for (let i = 0; i < array1.length; i++) {
@@ -294,13 +349,13 @@ function cidrBits<T extends number[]>(
       (array1[commonItems] & mask) !== 0 ||
       (array2[commonItems] & mask) === 0
     ) {
-      return undefined;
+      return -1;
     }
   }
   const allOnes = bitsPerItem === 8 ? 0xff : 0xffff;
   for (let i = commonItems + 1; i < array1.length; i++) {
     if (array1[i] !== 0 || array2[i] !== allOnes) {
-      return undefined;
+      return -1;
     }
   }
   return commonItems * bitsPerItem + commonBits;
@@ -395,7 +450,11 @@ export class IPRange {
   }
 
   toString(): string {
-    let bits: number | undefined;
+    if (this.first === this.last) {
+      return this.first.toString();
+    }
+
+    let bits: number;
     let maxBits: number;
     if (this.first.version === 4) {
       bits = this.first._cidrBits(this.last as IPv4);
@@ -405,7 +464,7 @@ export class IPRange {
       maxBits = 128;
     }
 
-    if (bits === undefined) {
+    if (bits < 0) {
       return this.first.toString() + "-" + this.last.toString();
     } else if (bits === maxBits) {
       return this.first.toString();
