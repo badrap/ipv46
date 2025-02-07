@@ -125,13 +125,13 @@ function parseHexWords(ipStr: string): number[] | null {
   }
 
   const split = ipStr.split(":");
-  const words = new Array(split.length);
-  for (let i = 0, len = split.length; i < len; i++) {
+  const words = [];
+  for (let i = 0; i < split.length; i++) {
     const str = split[i];
     if (!str || str.length > 4) {
       return null;
     }
-    words[i] = parseInt(str, 16);
+    words.push(parseInt(str, 16));
   }
   return words;
 }
@@ -149,7 +149,7 @@ function parseIPv6Words(ipStr: string): number[] | null {
   }
 
   const idx = ipStr.indexOf("::");
-  if (idx >= 0 && ipStr.indexOf("::", idx + 1) >= 0) {
+  if (idx >= 0 && ipStr.includes("::", idx + 1)) {
     return null;
   }
 
@@ -295,7 +295,7 @@ export const IP: {
   cmp(a: IP, b: IP): number;
 } = {
   parse(string) {
-    return IPv4.parse(string) || IPv6.parse(string);
+    return IPv4.parse(string) ?? IPv6.parse(string);
   },
 
   cmp(a, b) {
@@ -383,8 +383,8 @@ function mask<T extends number[]>(
 
 export class IPRange {
   static parse(string: string): IPRange | null {
-    if (string.indexOf("/") >= 0) {
-      const match = string.match(/^([^/]+)\/(\d+)$/);
+    if (string.includes("/")) {
+      const match = /^([^/]+)\/(\d+)$/.exec(string);
       if (!match) {
         return null;
       }
@@ -397,7 +397,7 @@ export class IPRange {
         return null;
       }
       return ip.cidr(bits);
-    } else if (string.indexOf("-") >= 0) {
+    } else if (string.includes("-")) {
       const pieces = string.split("-");
       if (pieces.length > 2) {
         return null;
@@ -469,7 +469,7 @@ export class IPRange {
     } else if (bits === maxBits) {
       return this.first.toString();
     } else {
-      return this.first.toString() + "/" + bits;
+      return this.first.toString() + "/" + String(bits);
     }
   }
 }
