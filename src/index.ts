@@ -69,7 +69,7 @@ export class IPv4 {
   /**
    * The IP version number (always 4).
    */
-  readonly version!: 4;
+  declare readonly version: 4;
   static {
     Object.defineProperty(this.prototype, "version", {
       value: 4,
@@ -299,7 +299,7 @@ export class IPv6 {
   /**
    * The IP version number (always 6).
    */
-  readonly version!: 6;
+  declare readonly version: 6;
   static {
     Object.defineProperty(this.prototype, "version", {
       value: 6,
