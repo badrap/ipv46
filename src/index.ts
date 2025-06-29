@@ -40,16 +40,35 @@ function parseIPv4(ipStr: string, start: number): number {
   }
 }
 
+/**
+ * A class representing an IPv4 address. Provides related utilities as static methods.
+ */
 export class IPv4 {
+  /**
+   * Parse a string as an IPv4 address.
+   *
+   * @param string The input to parse as an IPv4 address.
+   * @returns An IPv4 instance if parsing succeeds, otherwise null.
+   */
   static parse(string: string): IPv4 | null {
     const int = parseIPv4(string, 0);
     return int < 0 ? null : new IPv4(int);
   }
 
+  /**
+   * Compare two IPv4 addresses.
+   *
+   * @param a The first IPv4 address.
+   * @param b The second IPv4 address.
+   * @returns 0, -1, or 1 if `a` is equal to, less than or greater than `b`, respectively.
+   */
   static cmp(a: IPv4, b: IPv4): number {
     return Math.sign(a._u32 - b._u32);
   }
 
+  /**
+   * The IP version number (always 4).
+   */
   readonly version!: 4;
   static {
     Object.defineProperty(this.prototype, "version", {
@@ -58,17 +77,33 @@ export class IPv4 {
     });
   }
 
+  /**
+   * The IPv4 address as a 32-bit unsigned integer.
+   *
+   * @internal
+   */
   private readonly _u32: number;
 
   private constructor(_u32: number) {
     this._u32 = _u32;
   }
 
+  /**
+   * Convert the IPv4 address to its string representation.
+   *
+   * @returns The IPv4 address as a string.
+   */
   toString(): string {
     const b = this._u32;
     return `${b >>> 24}.${(b >>> 16) & 0xff}.${(b >>> 8) & 0xff}.${b & 0xff}`;
   }
 
+  /**
+   * Get an IP range from this IPv4 address by applying a CIDR block mask to it.
+   *
+   * @param bits The number of bits in the mask.
+   * @returns An IPRange representing the CIDR block.
+   */
   cidr(bits: number): IPRange {
     if (bits === 32) {
       return new IPRange(this, this);
@@ -79,6 +114,7 @@ export class IPv4 {
     return new IPRange(first, last);
   }
 
+  /** @internal */
   _cidrBits(last: IPv4): number {
     const a = this._u32;
     const b = last._u32;
@@ -114,6 +150,7 @@ export class IPv4 {
     return lo - 1;
   }
 
+  /** @internal */
   _next(): IPv4 | null {
     const b = (this._u32 + 1) | 0;
     return b === 0 ? null : new IPv4(b);
@@ -205,7 +242,16 @@ function formatIPv6(words: number[]): string {
   );
 }
 
+/**
+ * A class representing an IPv6 address. Provides related utilities as static methods.
+ */
 export class IPv6 {
+  /**
+   * Parse a string as an IPv6 address.
+   *
+   * @param string The input to parse as an IPv6 address.
+   * @returns An IPv6 instance if parsing succeeds, otherwise null.
+   */
   static parse(string: string): IPv6 | null {
     const index = string.lastIndexOf(":");
     if (index < 0) {
@@ -230,6 +276,13 @@ export class IPv6 {
     return new IPv6(words);
   }
 
+  /**
+   * Compare two IPv6 addresses.
+   *
+   * @param a The first IPv6 address.
+   * @param b The second IPv6 address.
+   * @returns 0, -1, or 1 if `a` is equal to, less than or greater than `b`, respectively.
+   */
   static cmp(a: IPv6, b: IPv6): number {
     const aw = a._words;
     const bw = b._words;
@@ -243,6 +296,9 @@ export class IPv6 {
     return 0;
   }
 
+  /**
+   * The IP version number (always 6).
+   */
   readonly version!: 6;
   static {
     Object.defineProperty(this.prototype, "version", {
@@ -251,28 +307,54 @@ export class IPv6 {
     });
   }
 
+  /**
+   * The IPv6 address as an array of 8 16-bit unsigned integers (words).
+   *
+   * @internal
+   */
   private readonly _words: number[];
-  private _string: string | null = null;
+
+  /**
+   * A cached string representation of the IPv6 address. Calculated
+   * lazily on first use.
+   *
+   * @internal
+   */
+  private _string: string | null;
 
   private constructor(words: number[]) {
     this._words = words;
+    this._string = null;
   }
 
+  /**
+   * Convert the IPv6 address to its string representation.
+   *
+   * @returns The IPv6 address as a string.
+   */
   toString(): string {
     this._string ??= formatIPv6(this._words).toLowerCase();
     return this._string;
   }
 
+  /**
+   * Get an IP range from this IPv6 address by applying a CIDR block mask to it.
+   *
+   * @param bits The number of bits in the mask.
+   * @returns An IPRange representing the CIDR block.
+   */
   cidr(bits: number): IPRange {
     const first = new IPv6(mask(this._words, bits, 16, 0));
     const last = new IPv6(mask(this._words, bits, 16, 1));
     return new IPRange(first, last);
   }
 
+  /** @internal */
   _cidrBits(last: IPv6): number {
     return cidrBits(this._words, last._words, 16);
   }
 
+  /** @internal */
   _next(): IPv6 | null {
     const words = this._words.slice();
     for (let i = words.length - 1; i >= 0; i--) {
@@ -290,10 +372,30 @@ export class IPv6 {
   }
 }
 
+/**
+ * Represents an IP address, either IPv4 or IPv6.
+ */
 export type IP = IPv4 | IPv6;
 
+/**
+ * Utility functions for working with IPv4 and IPv6 addresses.
+ */
 export const IP: {
+  /**
+   * Parse a string as either an IPv4 or IPv6 address.
+   *
+   * @param string The input to parse.
+   * @returns Return an IP instance if parsing succeeds, otherwise null.
+   */
   parse(string: string): IP | null;
+  /**
+   * Compare two IP addresses. IPv4 addresses are always considered to be
+   * less than IPv6 addresses.
+   *
+   * @param a The first IP address.
+   * @param b The second IP address.
+   * @returns -1, 0, or 1 depending on the comparison result.
+   */
   cmp(a: IP, b: IP): number;
 } = {
   parse(string) {
@@ -383,7 +485,16 @@ function mask<T extends number[]>(
   return copy as T;
 }
 
+/**
+ * A class representing a continuous range of IP addresses.
+ */
 export class IPRange {
+  /**
+   * Parse a string as an IP range (CIDR, hyphenated, or single address).
+   *
+   * @param string The input to parse.
+   * @returns An IPRange instance if parsing succeeds, otherwise null.
+   */
   static parse(string: string): IPRange | null {
     if (string.includes("/")) {
       const match = /^([^/]+)\/(\d+)$/.exec(string);
@@ -423,10 +534,27 @@ export class IPRange {
     }
   }
 
+  /**
+   * The first IP address in the range.
+   */
   readonly first: IP;
+
+  /**
+   * The last IP address in the range.
+   */
   readonly last: IP;
+
+  /**
+   * The version of IP addresses in the range (4 or 6).
+   */
   readonly version: 4 | 6;
 
+  /**
+   * Create a new IPRange from two IP addresses. The address versions must match.
+   *
+   * @param first The first IP address.
+   * @param last The last IP address.
+   */
   constructor(first: IPv4, last: IPv4);
   constructor(first: IPv6, last: IPv6);
   constructor(first: IP, last: IP) {
@@ -443,6 +571,11 @@ export class IPRange {
     this.version = first.version;
   }
 
+  /**
+   * Yield all IP addresses in the range.
+   *
+   * @returns An iterable of IP addresses from first to last.
+   */
   *ips(): Iterable<IP> {
     let ip: IP | null = this.first;
     while (ip && IP.cmp(ip, this.last) <= 0) {
@@ -451,6 +584,11 @@ export class IPRange {
     }
   }
 
+  /**
+   * Convert the range to its string representation.
+   *
+   * @returns Return a minimal string representation of the range.
+   */
   toString(): string {
     if (this.first === this.last) {
       return this.first.toString();

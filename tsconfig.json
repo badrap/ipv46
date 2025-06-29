@@ -12,7 +12,8 @@
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "stripInternal": true
   },
   "include": ["mod.ts", "src/**/*", "tests/**/*"]
 }
