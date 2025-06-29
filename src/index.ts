@@ -58,7 +58,11 @@ export class IPv4 {
     });
   }
 
-  private constructor(readonly _u32: number) {}
+  private readonly _u32: number;
+
+  private constructor(_u32: number) {
+    this._u32 = _u32;
+  }
 
   toString(): string {
     const b = this._u32;
@@ -255,9 +259,7 @@ export class IPv6 {
   }
 
   toString(): string {
-    if (this._string === null) {
-      this._string = formatIPv6(this._words).toLowerCase();
-    }
+    this._string ??= formatIPv6(this._words).toLowerCase();
     return this._string;
   }
 
