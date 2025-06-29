@@ -1,5 +1,11 @@
 # @badrap/ipv46
 
+## 2.2.4
+
+### Patch Changes
+
+- [`a80c324`](https://github.com/badrap/ipv46/commit/a80c3246cef4f21b7f70ae41f8011cb21d1c4ffc) Thanks [@jviide](https://github.com/jviide)! - Add TSDoc comments.
+
 ## 2.2.3
 
 ### Patch Changes
