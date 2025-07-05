@@ -49,6 +49,12 @@ export class IPv4 {
    *
    * @param string The input to parse as an IPv4 address.
    * @returns An IPv4 instance if parsing succeeds, otherwise null.
+   * @example
+   * const ip = IPv4.parse("192.168.1.1");
+   * // ip is an IPv4 instance
+   * @example
+   * const invalid = IPv4.parse("not-an-ip");
+   * // invalid is null
    */
   static parse(string: string): IPv4 | null {
     const int = parseIPv4(string, 0);
@@ -61,6 +67,12 @@ export class IPv4 {
    * @param a The first IPv4 address.
    * @param b The second IPv4 address.
    * @returns 0, -1, or 1 if `a` is equal to, less than or greater than `b`, respectively.
+   * @example
+   * const a = IPv4.parse("192.168.1.1");
+   * const b = IPv4.parse("192.168.1.2");
+   * IPv4.cmp(a, a); // 0
+   * IPv4.cmp(a, b); // -1
+   * IPv4.cmp(b, a); // 1
    */
   static cmp(a: IPv4, b: IPv4): number {
     return Math.sign(a._u32 - b._u32);
@@ -92,6 +104,9 @@ export class IPv4 {
    * Convert the IPv4 address to its string representation.
    *
    * @returns The IPv4 address as a string.
+   * @example
+   * const ip = IPv4.parse("192.168.1.1");
+   * ip.toString(); // "192.168.1.1"
    */
   toString(): string {
     const b = this._u32;
@@ -103,6 +118,10 @@ export class IPv4 {
    *
    * @param bits The number of bits in the mask.
    * @returns An IPRange representing the CIDR block.
+   * @example
+   * const ip = IPv4.parse("192.168.1.100");
+   * const range = ip.cidr(24);
+   * // range covers 192.168.1.0 to 192.168.1.255
    */
   cidr(bits: number): IPRange {
     if (bits === 32) {
@@ -251,6 +270,12 @@ export class IPv6 {
    *
    * @param string The input to parse as an IPv6 address.
    * @returns An IPv6 instance if parsing succeeds, otherwise null.
+   * @example
+   * const ip = IPv6.parse("2001:db8::1");
+   * // ip is an IPv6 instance
+   * @example
+   * const embedded = IPv6.parse("::ffff:192.0.2.1");
+   * // embedded IPv4 address in IPv6
    */
   static parse(string: string): IPv6 | null {
     const index = string.lastIndexOf(":");
@@ -282,6 +307,12 @@ export class IPv6 {
    * @param a The first IPv6 address.
    * @param b The second IPv6 address.
    * @returns 0, -1, or 1 if `a` is equal to, less than or greater than `b`, respectively.
+   * @example
+   * const a = IPv6.parse("2001:db8::1");
+   * const b = IPv6.parse("2001:db8::2");
+   * IPv6.cmp(a, a); // 0
+   * IPv6.cmp(a, b); // -1
+   * IPv6.cmp(b, a); // 1
    */
   static cmp(a: IPv6, b: IPv6): number {
     const aw = a._words;
@@ -331,6 +362,9 @@ export class IPv6 {
    * Convert the IPv6 address to its string representation.
    *
    * @returns The IPv6 address as a string.
+   * @example
+   * const ip = IPv6.parse("2001:0db8:0000:0000:0000:0000:0000:0001");
+   * ip.toString(); // "2001:db8::1"
    */
   toString(): string {
     this._string ??= formatIPv6(this._words).toLowerCase();
@@ -342,6 +376,10 @@ export class IPv6 {
    *
    * @param bits The number of bits in the mask.
    * @returns An IPRange representing the CIDR block.
+   * @example
+   * const ip = IPv6.parse("2001:db8::1");
+   * const range = ip.cidr(64);
+   * // range covers 2001:db8:: to 2001:db8::ffff:ffff:ffff:ffff
    */
   cidr(bits: number): IPRange {
     const first = new IPv6(mask(this._words, bits, 16, 0));
@@ -386,6 +424,10 @@ export const IP: {
    *
    * @param string The input to parse.
    * @returns Return an IP instance if parsing succeeds, otherwise null.
+   * @example
+   * const ipv4 = IP.parse("192.168.1.1");
+   * const ipv6 = IP.parse("2001:db8::1");
+   * const invalid = IP.parse("not-an-ip"); // null
    */
   parse(string: string): IP | null;
   /**
@@ -395,6 +437,11 @@ export const IP: {
    * @param a The first IP address.
    * @param b The second IP address.
    * @returns -1, 0, or 1 depending on the comparison result.
+   * @example
+   * const ipv4 = IP.parse("192.168.1.1");
+   * const ipv6 = IP.parse("2001:db8::1");
+   * IP.cmp(ipv4, ipv6); // -1 (IPv4 < IPv6)
+   * IP.cmp(ipv4, ipv4); // 0 (equal)
    */
   cmp(a: IP, b: IP): number;
 } = {
@@ -494,6 +541,10 @@ export class IPRange {
    *
    * @param string The input to parse.
    * @returns An IPRange instance if parsing succeeds, otherwise null.
+   * @example
+   * const cidr = IPRange.parse("192.168.1.0/24");
+   * const range = IPRange.parse("192.168.1.1-192.168.1.10");
+   * const single = IPRange.parse("192.168.1.1");
    */
   static parse(string: string): IPRange | null {
     if (string.includes("/")) {
@@ -575,6 +626,12 @@ export class IPRange {
    * Yield all IP addresses in the range.
    *
    * @returns An iterable of IP addresses from first to last.
+   * @example
+   * const range = IPRange.parse("192.168.1.1-192.168.1.3");
+   * for (const ip of range.ips()) {
+   *   console.log(ip.toString());
+   * }
+   * // Outputs: "192.168.1.1", "192.168.1.2", "192.168.1.3"
    */
   *ips(): Iterable<IP> {
     let ip: IP | null = this.first;
@@ -588,6 +645,12 @@ export class IPRange {
    * Convert the range to its string representation.
    *
    * @returns Return a minimal string representation of the range.
+   * @example
+   * const cidr = IPRange.parse("192.168.1.0/24");
+   * cidr.toString(); // "192.168.1.0/24"
+   * @example
+   * const range = IPRange.parse("192.168.1.1-192.168.1.10");
+   * range.toString(); // "192.168.1.1-192.168.1.10"
    */
   toString(): string {
     if (this.first === this.last) {
