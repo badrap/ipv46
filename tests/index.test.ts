@@ -475,6 +475,20 @@ describe("IPRange", () => {
       }
       expect(Array.from(r6.ips()).map((ip) => String(ip))).toEqual(ip6s);
     });
+
+    it("iterates through the IP addresses in the range", () => {
+      // Regression test: check that IPv4's internal u32 counter stays
+      // unsigned when it has a value > 2**31.
+      const r4 = IPRange.parse("192.168.1.0/30");
+      assert(r4);
+
+      expect(Array.from(r4.ips()).map((ip) => String(ip))).toEqual([
+        "192.168.1.0",
+        "192.168.1.1",
+        "192.168.1.2",
+        "192.168.1.3",
+      ]);
+    });
   });
 
   describe("toString()", () => {

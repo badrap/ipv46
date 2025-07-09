@@ -152,7 +152,7 @@ export class IPv4 {
 
   /** @internal */
   _next(): IPv4 | null {
-    const b = (this._u32 + 1) | 0;
+    const b = (this._u32 + 1) >>> 0;
     return b === 0 ? null : new IPv4(b);
   }
 }
