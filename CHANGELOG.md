@@ -1,5 +1,11 @@
 # @badrap/ipv46
 
+## 2.2.5
+
+### Patch Changes
+
+- [`3a0682b`](https://github.com/badrap/ipv46/commit/3a0682b6ce548d43a289d74b81696f6469267f1d) Thanks [@jviide](https://github.com/jviide)! - fix: avoid unintentional wraparound when iterating through IPv4 addresses in an IPRange
+
 ## 2.2.4
 
 ### Patch Changes
