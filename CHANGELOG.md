@@ -1,5 +1,11 @@
 # @badrap/ipv46
 
+## 2.2.6
+
+### Patch Changes
+
+- [`e38d366`](https://github.com/badrap/ipv46/commit/e38d366ea3d548a09e1978e2b86c285882c8d972) Thanks [@jviide](https://github.com/jviide)! - Publish to npm using trusted publishing
+
 ## 2.2.5
 
 ### Patch Changes
