@@ -96,5 +96,5 @@ const a = IP.parse("2001:0db8::2");
 const b = IP.parse("2001:0db8::1");
 const c = IP.parse("2001:0db8::")
 
-[a, b, c].sort(IP.cmp); // [c, b, a]
+  [(a, b, c)].sort(IP.cmp); // [c, b, a]
 ```
