@@ -1,5 +1,4 @@
-import assert from "node:assert";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, assert } from "vitest";
 import { IP, IPv4, IPv6, IPRange } from "../src";
 
 describe("IPv4", () => {

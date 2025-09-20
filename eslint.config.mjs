@@ -20,7 +20,6 @@ export default defineConfig(
       },
     },
     rules: {
-      "prettier/prettier": "warn",
       eqeqeq: ["error", "smart"],
       "no-console": "error",
       "no-multi-assign": "error",
