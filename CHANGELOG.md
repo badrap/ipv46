@@ -1,5 +1,11 @@
 # @badrap/ipv46
 
+## 2.2.7
+
+### Patch Changes
+
+- [`4b02b38`](https://github.com/badrap/ipv46/commit/4b02b3820ca461abce47691c5b2b2ba13f811c7a) Thanks [@jviide](https://github.com/jviide)! - Separate build and publish workflow jobs
+
 ## 2.2.6
 
 ### Patch Changes
