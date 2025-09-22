@@ -1,5 +1,11 @@
 # @badrap/ipv46
 
+## 2.2.8
+
+### Patch Changes
+
+- [`ca4a1aa`](https://github.com/badrap/ipv46/commit/ca4a1aa24378ef290b52218f0c9d6b14b22018df) Thanks [@jviide](https://github.com/jviide)! - Update testing and publishing workflow
+
 ## 2.2.7
 
 ### Patch Changes
